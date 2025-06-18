@@ -1,0 +1,743 @@
+/* --------------------------------------
+   RESET BÁSICO
+   -------------------------------------- */
+   * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  .error-text {
+      color: red;
+      margin-top: 8px;
+      font-size: 14px;
+  }
+
+  body {
+    position: relative;
+    font-family: 'Segoe UI', sans-serif;
+    /* Restauramos tu fondo original de La Capital */
+    background-color: #271e04; /* Color marrón oscuro base */
+    background-image: url('img2capital.png');
+    background-size: 220px 220px;
+    background-repeat: repeat;
+    background-position: 10px 80px;
+    background-attachment: fixed;
+    color: #222;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  
+  /* --------------------------------------
+     MOSAICO DEL LOGO “capitallogo.jpg” EN DIAGONAL
+     -------------------------------------- */
+  body::before {
+    content: "";
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background-image: url('capitallogo.jpg');
+    background-size: 200px 200px;      /* Tamaño de cada logo en el mosaico */
+    background-repeat: repeat;
+    background-position: center;
+    opacity: 0.075;                     /* Baja opacidad para que sea sutil */
+    transform: rotate(45deg);           /* Rotamos 45° para diagonal */
+    z-index: -1;                        /* Queda estrictamente detrás de todo */
+    pointer-events: none;
+  }
+  
+  /* ---------- HEADER ---------- */
+  header{
+    background-color:#f5f0c5;   /* ← crema claro, ya no negro */
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 24px;
+    position:sticky;
+    top:0;
+    z-index:10;
+  }
+
+  
+  header .center {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    background-color: #ffd404; /* Amarillo marca */
+    padding: 8px 16px;
+    border-radius: 12px;
+    color: #000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  header button {
+    font-size: 16px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background-color: #ffd404;
+    color: #000;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+  }
+  /* --- BOTÓN “Cerrar Sesión” (ancla dentro de header) --- */
+header .link-button{
+  background:#ffd404;
+  color:#000;
+  padding:8px 24px;
+  font-size:16px;
+  font-weight:600;
+  border-radius:8px;
+  box-shadow:0 4px 12px rgba(0,0,0,.2);
+  margin-left:auto;     /* lo pega al borde derecho */
+  line-height:1;
+}
+
+    /* ───────── BOTÓN "CERRAR SESIÓN" ───────── */
+    header .card-button{          /* sólo el que vive dentro del header */
+      width:auto;                 /* deja de ocupar el 90 % */
+      margin-left:auto;           /* lo empuja al borde derecho */
+      font-size:16px;             /* tamaño coherente con el resto del header */
+      padding:8px 24px;           /* mismo padding de tus botones negros */
+      line-height:1;              /* evita que crezca en altura */
+    }
+  header button:hover {
+    background-color: #ffe164;
+    transform: scale(1.03);
+  }
+  
+  /* --------------------------------------
+     BOTÓN “+ AGREGAR HAMBURGUESA”
+     -------------------------------------- */
+  .agregar {
+    background-color: #000; /* Fondo negro sólido */
+    text-align: center;
+    padding: 16px 0;
+  }
+  
+  .card-button {
+    background-color: #ffd404;
+    color: #000;
+    padding: 18px 28px;
+    font-size: 30px;
+    font-weight: 700;
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+    cursor: pointer;
+    display: inline-block;
+    margin: 16px auto;
+    text-align: center;
+    width: 90%;
+    max-width: 700px;
+    z-index: 1; /* Asegura que el botón se vea sobre el fondo */
+  }
+  
+  .card-button:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    background-color: #ffeaaa;
+  }
+  
+  /* --------------------------------------
+     FORMULARIO “AGREGAR/EDITAR HAMBURGUESA”
+     -------------------------------------- */
+  #formulario-container {
+    background: #fff8dc;
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    margin: 32px auto;
+    max-width: 650px;
+    padding: 24px;
+    width: 95%;
+    position: relative;
+    z-index: 1; /* Para que siempre esté sobre el mosaico */
+  }
+  
+  #formulario-container label.label-text {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+    font-size: 16px;
+  }
+  
+  /* Inputs y textareas regulares */
+  #formulario-container input[type="text"],
+  #formulario-container input[type="number"],
+  #formulario-container textarea {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    border: 1px solid #aaa;
+    font-size: 16px;
+    background-color: #fff;
+    color: #222;
+  }
+  
+  #formulario-container textarea {
+    resize: none;
+    min-height: 80px;
+  }
+  
+  /* Control de archivo “Seleccionar” más grande */
+  #formulario-container input[type="file"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border: 1px solid #888;
+    background-color: #f0e9c8;
+    font-size: 16px;
+    color: #333;
+  }
+  
+  /* Botones Guardar / Cancelar */
+  .botones-form {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+  }
+  
+  #formulario-container button {
+    padding: 12px 24px;
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+    flex: 1;
+  }
+  
+  #guardarBtn {
+    background-color: #000;
+    color: #ffd404;
+  }
+  
+  #guardarBtn:hover {
+    background-color: #333;
+    transform: translateY(-2px);
+  }
+  
+  #cancelarBtn {
+    background-color: #dc3545;
+    color: #fff;
+  }
+  
+  #cancelarBtn:hover {
+    background-color: #a71d2a;
+    transform: translateY(-2px);
+  }
+  
+  #error-form {
+    color: red;
+    font-size: 14px;
+    margin-top: 8px;
+  }
+  
+  /* --------------------------------------
+     TARJETAS DE HAMBURGUESA
+     -------------------------------------- */
+  #lista-hamburguesas {
+    padding-bottom: 32px;
+  }
+  
+  .hamburguesa {
+    position: relative;         /* Necesario para z-index */
+    z-index: 0;                  /* Se asegura de que quede sobre el mosaico */
+    background-color: #fff4c1;   /* Crema muy claro */
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin: 24px auto;
+    max-width: 1000px;
+    overflow: hidden;
+    padding: 20px;
+    gap: 20px;
+  }
+  
+  .hamburguesa:nth-child(even) {
+    background-color: #fff7d1;
+  }
+  
+  /* Círculo con el número */
+  .hamburguesa .numero {
+    background-color: #000;
+    color: #ffd404;
+    font-size: 20px;
+    font-weight: 700;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-right: 16px;
+  }
+  
+  /* Bloque de texto principal */
+  .hamburguesa .info {
+    flex: 1 1 450px;
+    min-width: 320px;
+    text-align: left;
+  }
+  
+  .hamburguesa .info h3 {
+    font-size: 28px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #111;
+    text-shadow: 1px 1px 1px #ddd;
+  }
+  
+  .hamburguesa .info p {
+    font-size: 16px;
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+  
+  .hamburguesa .info p strong {
+    color: #000;
+  }
+  
+  /* Columna derecha: botones + foto  */
+  .hamburguesa .derecha {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+    width: 200px; /* Un poco más de ancho para que quepa la foto grande */
+  }
+  
+  /* Botones “Editar / Eliminar” */
+  .hamburguesa .derecha .botones {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+  
+  .hamburguesa .derecha .botones button {
+    background-color: #000;
+    color: #ffd404;
+    font-size: 14px;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background 0.2s ease, transform 0.1s ease;
+  }
+  
+  .hamburguesa .derecha .botones button:first-child {
+    background-color: #000;
+  }
+  
+  .hamburguesa .derecha .botones button:first-child:hover {
+    background-color: #333;
+    transform: scale(1.03);
+  }
+  
+  .hamburguesa .derecha .botones button:last-child {
+    background-color: #dc3545;
+    color: #fff;
+  }
+  
+  .hamburguesa .derecha .botones button:last-child:hover {
+    background-color: #a71d2a;
+    transform: scale(1.03);
+  }
+  
+  /* Foto circular (200×200 px en desktop) */
+  .hamburguesa .derecha .foto {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #ffd404;
+  }
+  
+  .hamburguesa .derecha .foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+  
+  /* Si no hay foto */
+  .hamburguesa .derecha .no-foto {
+    width: 100%;
+    height: 100%;
+    background: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    border-radius: 50%;
+  }
+  
+  /* --------------------------------------
+     LOGIN
+     -------------------------------------- */
+  #login-container {
+    align-items: center;
+    background-color: #ffd404;
+    display: flex;
+    height: 100vh;
+    justify-content: center;
+  }
+  
+  .login-box {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    padding: 24px;
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+  }
+  
+  .logo-login {
+    margin-bottom: 16px;
+    width: 180px;
+  }
+  
+  .login-box h2 {
+    color: #222;
+    font-size: 22px;
+    margin-bottom: 12px;
+  }
+  
+  .login-box input {
+    border: 1px solid #aaa;
+    border-radius: 8px;
+    font-size: 16px;
+    margin: 8px 0;
+    padding: 10px;
+    width: 100%;
+  }
+  
+  .login-box button {
+    background-color: #000;
+    border: none;
+    border-radius: 8px;
+    color: #ffd404;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 12px;
+    padding: 10px;
+    transition: background 0.2s ease;
+    width: 100%;
+  }
+  
+  .login-box button:hover {
+    background-color: #333;
+  }
+  
+  .login-box .error {
+    color: red;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  
+  /* --------------------------------------
+     MEDIA QUERIES (RESPONSIVE)
+     -------------------------------------- */
+  @media screen and (max-width: 768px) {
+    body::before {
+      background-size: 120px 120px;
+      background-position: 0 0;
+    }
+  
+    /* HEADER se apila vertical */
+    header {
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px 16px;
+    }
+  
+    header .center {
+      font-size: 24px;
+      padding: 6px 12px;
+    }
+  
+    header button {
+      font-size: 14px;
+      padding: 6px 12px;
+    }
+  
+    /* BOTÓN AGREGAR más pequeño */
+    .card-button {
+      font-size: 22px;
+      padding: 12px 16px;
+      width: 95%;
+    }
+  
+    /* FORMULARIO: ocupa todo el ancho con menos margen */
+    #formulario-container {
+      margin: 16px auto;
+      padding: 16px;
+      width: 95%;
+    }
+  
+    #formulario-container input,
+    #formulario-container textarea {
+      font-size: 14px;
+      padding: 8px;
+    }
+  
+    #formulario-container label.label-text {
+      font-size: 14px;
+    }
+  
+    /* Ajusta input[type="file"] en móvil */
+    #formulario-container input[type="file"] {
+      padding: 10px;
+      font-size: 14px;
+    }
+  
+    .botones-form {
+      flex-direction: column;
+      gap: 10px;
+    }
+  
+    #formulario-container button {
+      font-size: 16px;
+      padding: 10px;
+    }
+  
+    /* TARJETAS: apilan en columna */
+    .hamburguesa {
+      position: relative;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      max-width: 95vw;
+    }
+  
+    .hamburguesa .numero {
+      margin-bottom: 10px;
+      width: 32px;
+      height: 32px;
+      font-size: 16px;
+    }
+  
+    .hamburguesa .info {
+      flex: 1 1 100%;
+      min-width: auto;
+      text-align: center;
+    }
+  
+    .hamburguesa .info h3 {
+      font-size: 22px;
+    }
+  
+    .hamburguesa .info p {
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+  
+    .hamburguesa .derecha {
+      flex-direction: column;
+      margin-top: 12px;
+      width: 100%;
+      gap: 12px;
+    }
+  
+    .hamburguesa .derecha .botones {
+      flex-direction: row;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+    }
+  
+    .hamburguesa .derecha .botones button {
+      font-size: 14px;
+      padding: 8px;
+      flex: 1;
+    }
+  
+    /* Reducimos la foto a 120×120 en móvil */
+    .hamburguesa .derecha .foto {
+      width: 120px;
+      height: 120px;
+    }
+  
+    .hamburguesa .derecha .foto img,
+    .hamburguesa .derecha .no-foto {
+      width: 120px;
+      height: 120px;
+    }
+    .error-msg {
+  color: red;
+  font-size: 0.85em;
+  margin-top: -0.5em;
+  margin-bottom: 1em;
+  display: block;
+}
+.anuncio {
+  background: #000;
+  color: #ffd404;
+  padding: 1em;
+  text-align: center;
+  border-radius: 8px;
+  margin-bottom: 1em;
+  font-size: 1.1em;
+}
+.hidden { display: none !important; }
+
+  }
+
+/* FIELD */
+.field {
+  margin-bottom: 1rem;
+}
+.field label {
+  display: block;
+  margin-bottom: .25rem;
+  font-weight: 600;
+}
+.field input,
+.field textarea {
+  width: 100%;
+  padding: .5rem;
+  border: 1px solid #aaa;
+  border-radius: .5rem;
+  font-size: 1rem;
+}
+.field input::placeholder,
+.field textarea::placeholder {
+  font-style: italic;
+  color: #999;
+}
+.field.invalid input,
+.field.invalid textarea {
+  border-color: #c0392b;
+}
+
+/* ERROR MESSAGES: por defecto ocultas */
+.error-msg {
+  display: none;
+  color: #c0392b;
+  font-size: .875rem;
+  margin-top: .25rem;
+}
+
+/* Cuando el campo sea inválido, mostramos el error */
+.field.invalid .error-msg {
+  display: block;
+}
+
+/* Placeholder con tipografía normal (no cursiva) */
+.field input::placeholder,
+.field textarea::placeholder {
+  font-style: normal;
+  color: #999;
+}
+
+/* Al marcar campo inválido, damos espacio extra abajo */
+.field.invalid {
+  margin-bottom: 2rem; /* aumenta el espacio solo si hay error */
+}
+/* BOTONES */
+.botones-form {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+#guardarBtn,
+#cancelarBtn {
+  flex: 1;
+  padding: .75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: .5rem;
+  cursor: pointer;
+}
+#guardarBtn {
+  background-color: #000;
+  color: #ffd404;
+}
+#guardarBtn:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+#cancelarBtn {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+/* ANUNCIO */
+.anuncio {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #27ae60;
+  color: #fff;
+  text-align: center;
+  border-radius: .5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  animation: fadeIn 0.4s ease-out;
+}
+.hidden {
+  display: none;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+/* Quitar subrayado de los enlaces .card-button */
+.card-button {
+  text-decoration: none;
+}
+
+/* Estilos del mini-header en formulario */
+.mini-panel {
+  background-color: #000;
+  text-align: center;
+  padding: 16px 0;
+  margin-bottom: 16px;
+}
+.mini-panel .card-button {
+  background-color: #ffd404;
+  color: #000;
+  padding: 12px 24px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  border-radius: 12px;
+  display: inline-block;
+}
+/* Quitar subrayado de los enlaces con estilo de botón */
+.link-button {
+  text-decoration: none; /* sin subrayado */
+  color: inherit;        /* hereda color de .card-button */
+}
+
+/* Hacemos que en el header el link ocupe el mismo espacio y se alinee a la derecha */
+header .link-button {
+  margin-left: auto;     /* empuja hacia la derecha */
+  display: inline-block; /* igual que .card-button */
+  width: auto;           /* que sea el ancho de su contenido */
+  padding: 12px 24px;    /* el mismo padding que tus botones de header */
+  font-size: 16px;       /* igual que los botones de header */
+}
+
+/* En pantallas pequeñas, mantenemos el mismo comportamiento responsive */
+@media screen and (max-width: 768px) {
+  header .link-button {
+    width: 100%;
+    margin: 8px 0 0 0;
+  }
+}

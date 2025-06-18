@@ -44,6 +44,14 @@ INSTALLED_APPS = [
 
 ]
 
+SESSION_COOKIE_AGE = 1800  
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+LOGIN_REDIRECT_URL = '/management/panel/'
+
+LOGOUT_REDIRECT_URL = '/management/login/'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
