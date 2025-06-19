@@ -1,0 +1,108 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Crear/Editar Hamburguesa</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+
+  <!-- Encabezado -->
+  <header>
+    <div class="center">LA CAPITAL</div>
+  </header>
+
+  <!-- Botón de regreso -->
+  <section class="agregar">
+    <a href="{% url 'panel' %}" class="card-button">← Ver listado de hamburguesas</a>
+  </section>
+
+  <!-- Formulario completo -->
+  <section id="formulario-container">
+    <form id="formHamburguesa" method="POST" action="#" enctype="multipart/form-data" novalidate>
+      
+      <!-- Nombre -->
+      <div class="field" id="campo-nombre">
+        <label for="nombre">Nombre:</label>
+        <input type="text" name="nombre" id="nombre" placeholder="Ej: La Capital Supreme" required />
+        <div id="error-nombre" class="error-msg"></div>
+      </div>
+
+      <!-- Descripción -->
+      <div class="field" id="campo-descripcion">
+        <label for="descripcion">Descripción:</label>
+        <textarea name="descripcion" id="descripcion" placeholder="Mínimo 5 caracteres…" required></textarea>
+        <div id="error-descripcion" class="error-msg"></div>
+      </div>
+
+      <!-- Modelo 3D -->
+      <div class="field" id="campo-modelo3d">
+        <label for="modelo3d">Modelo 3D (.fbx):</label>
+        <input type="file" id="modelo3d" accept=".fbx" required />
+        <div id="error-modelo3d" class="error-msg"></div>
+      </div>
+
+      <!-- Imagen -->
+      <div class="field" id="campo-foto">
+        <label for="foto">Imagen de previsualización (.png/.jpg/.webp):</label>
+        <input type="file" id="foto" accept="image/png, image/jpeg, image/webp" required />
+        <div id="error-foto" class="error-msg"></div>
+      </div>
+
+      <!-- Textura -->
+      <div class="field" id="campo-textura">
+        <label for="textura">Textura del modelo (.png/.jpg):</label>
+        <input type="file" id="textura" accept="image/png, image/jpeg" required />
+        <div id="error-textura" class="error-msg"></div>
+      </div>
+
+      <!-- Tamaño Alto -->
+      <div class="field" id="campo-tamanio_alto">
+        <label for="tamanio_alto">Tamaño Alto (cm):</label>
+        <input type="number" name="tamanio_alto" id="tamanio_alto" min="1" max="100" placeholder="Ej: 12" required />
+        <div id="error-tamanio_alto" class="error-msg"></div>
+      </div>
+
+      <!-- Tamaño Ancho -->
+      <div class="field" id="campo-tamanio_ancho">
+        <label for="tamanio_ancho">Tamaño Ancho (cm):</label>
+        <input type="number" name="tamanio_ancho" id="tamanio_ancho" min="1" max="100" placeholder="Ej: 8" required />
+        <div id="error-tamanio_ancho" class="error-msg"></div>
+      </div>
+
+      <!-- Peso -->
+      <div class="field" id="campo-peso">
+        <label for="peso">Peso (g):</label>
+        <input type="number" name="peso" id="peso" min="1" max="500" placeholder="Ej: 250" required />
+        <div id="error-peso" class="error-msg"></div>
+      </div>
+
+      <!-- Precio -->
+      <div class="field" id="campo-precio">
+        <label for="precio">Precio (Bs):</label>
+        <input type="text" name="precio" id="precio" placeholder="Ej: 55,00 Bs." required />
+        <div id="error-precio" class="error-msg"></div>
+      </div>
+
+      <!-- Botones -->
+      <div class="botones-form">
+        <button type="submit" id="guardarBtn">Guardar</button>
+        <button type="button" id="cancelarBtn">Cancelar</button>
+      </div>
+
+      <!-- Anuncio -->
+      <div id="anuncioCreacion" class="anuncio hidden">
+        <span id="textoAnuncio"></span>
+      </div>
+    </form>
+  </section>
+
+  <!-- Script JS -->
+    <script>
+      const URL_PANEL = "{% url 'panel' %}";
+    </script>
+  <script src="{% static 'js/script.js' %}" type="module"></script>
+</body>
+</html>

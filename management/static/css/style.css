@@ -17,7 +17,7 @@
     font-family: 'Segoe UI', sans-serif;
     /* Restauramos tu fondo original de La Capital */
     background-color: #271e04; /* Color marrón oscuro base */
-    background-image: url('img2capital.png');
+    background-image: url('../img/img2capital.png');
     background-size: 220px 220px;
     background-repeat: repeat;
     background-position: 10px 80px;

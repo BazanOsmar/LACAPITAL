@@ -23,3 +23,8 @@ def logout_view(request):
 @login_required(login_url='/management/login/')
 def panel_view(request):
     return render(request, 'panel.html')
+
+
+@login_required(login_url='/management/login/')
+def formulario_hamburguesa_view(request):
+    return render(request, 'formulario.html')

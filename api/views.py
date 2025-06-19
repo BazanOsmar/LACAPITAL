@@ -21,7 +21,9 @@ def crear_hamburguesa(request):
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    print("Errores de validación:", serializer.errors)  # <-- añade esto
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['PUT'])
 def actualizar_hamburguesa(request, pk):

@@ -1,296 +1,245 @@
-// script.js
+// static/js/script.js
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-storage.js";
 
-// Variables globales
-let hamburguesas = JSON.parse(localStorage.getItem("hamburguesas")) || [];
-let fbxURLs      = [];     // Blob URLs en memoria
-let editandoId   = null;
+// Configuración de Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyBblob3BpMOfvTIVN7roF7uIreDjXMvzao",
+  authDomain: "la-capital-73e6f.firebaseapp.com",
+  projectId: "la-capital-73e6f",
+  storageBucket: "la-capital-73e6f.firebasestorage.app",
+  messagingSenderId: "96162435417",
+  appId: "1:96162435417:web:3bde74753c24a89fd6fc48",
+  measurementId: "G-9PN7EBW2H0"
+};
 
-// Reconstruye placeholders de blob URLs al inicio
-hamburguesas.forEach(() => fbxURLs.push({ url: null, nombre: "" }));
+// Inicializar Firebase
+const app = initializeApp(firebaseConfig);
+const storage = getStorage(app);
 
-document.addEventListener("DOMContentLoaded", () => {
-  // —————————————————————————————
-  // 1) LOGIN PAGE (index.html)
-  // —————————————————————————————
-  const loginForm = document.getElementById("loginForm");
-  if (loginForm) {
-    const errorLogin     = document.getElementById("error-login");
-    const loginContainer = document.getElementById("login-container");
-    loginContainer.style.display = "flex";
+// Referencias DOM
+const form = document.getElementById('formHamburguesa');
+const anuncio = document.getElementById('anuncioCreacion');
+const textoAnuncio = document.getElementById('textoAnuncio');
 
-    loginForm.addEventListener("submit", e => {
-      e.preventDefault();
-      const usuario = document.getElementById("usuario").value.trim();
-      const clave   = document.getElementById("clave").value.trim();
-      if (usuario === "admin" && clave === "1234") {
-        localStorage.setItem("isLogged", "true");        // ← guardamos sesión
-        window.location.href = "panel.html";
-      } else {
-        errorLogin.textContent = "Usuario o contraseña incorrectos";
-      }
-    });
-    return;
+// Función para mostrar mensajes de estado
+function mostrarEstado(mensaje, esError = false, autoOcultar = true) {
+  anuncio.classList.remove('hidden');
+  anuncio.style.background = esError ? '#ff4444' : '#4CAF50';
+  textoAnuncio.textContent = mensaje;
+  
+  if (!esError && autoOcultar) {
+    setTimeout(() => {
+      anuncio.classList.add('hidden');
+    }, 5000);
+  }
+}
+
+// Validadores de campos
+const campos = [
+  {
+    id: "nombre", isFile: false,
+    validator: v => /^[A-Za-zÁÉÍÓÚáéíóúÜüÑñ0-9 ]+$/.test(v),
+    msg: "El nombre solo admite letras, números y espacios."
+  },
+  {
+    id: "descripcion", isFile: false,
+    validator: v => v.length >= 5,
+    msg: "Descripción mínima 5 caracteres."
+  },
+  {
+    id: "modelo3d", isFile: true,
+    validator: f => f && f.name.toLowerCase().endsWith(".fbx"),
+    msg: "Sube un .fbx válido."
+  },
+  {
+    id: "foto", isFile: true,
+    validator: f => f && ["image/png","image/jpeg","image/webp"].includes(f.type),
+    msg: "Imagen PNG/JPG/WEBP."
+  },
+  {
+    id: "textura", isFile: true,
+    validator: f => f && ["image/png","image/jpeg"].includes(f.type),
+    msg: "Textura PNG o JPG."
+  },
+  {
+    id: "tamanio_alto", isFile: false,
+    validator: v => { const n = +v; return n>=1&&n<=100; },
+    msg: "Alto 1–100 cm."
+  },
+  {
+    id: "tamanio_ancho", isFile: false,
+    validator: v => { const n = +v; return n>=1&&n<=100; },
+    msg: "Ancho 1–100 cm."
+  },
+  {
+    id: "precio", isFile: false,
+    validator: v => {
+      const num = parseFloat(v.replace(",", "."));
+      return /^\d+([.,]\d{1,2})?$/.test(v) && num>=0.01;
+    },
+    msg: "Precio ≥ 0.01 Bs."
+  }
+];
+
+// Validar un campo individual
+function validarCampo(campo) {
+  const elemento = document.getElementById(campo.id);
+  const errorElement = document.getElementById(`error-${campo.id}`);
+  let valor;
+  
+  if (campo.isFile) {
+    valor = elemento.files[0];
+  } else {
+    valor = elemento.value;
   }
 
-  // —————————————————————————————
-  // 2) PANEL PAGE (panel.html)
-  // —————————————————————————————
-  const panel = document.getElementById("panel");
-  if (panel) {
-    // bloqueo de acceso directo
-    if (localStorage.getItem("isLogged") !== "true") {
-      window.location.href = "index.html";
-      return;
+  if (!campo.validator(valor)) {
+    errorElement.textContent = campo.msg;
+    return false;
+  } else {
+    errorElement.textContent = '';
+    return true;
+  }
+}
+
+// Validar todo el formulario
+function validarFormulario() {
+  let valido = true;
+  campos.forEach(campo => {
+    if (!validarCampo(campo)) {
+      valido = false;
     }
+  });
+  return valido;
+}
 
-    const lista           = document.getElementById("lista-hamburguesas");
-    const agregarBtn      = document.getElementById("agregarBtn");
-    const cerrarSesionBtn = document.getElementById("cerrarSesionBtn");
+// Función para subir archivo a Firebase
+async function subirArchivo(archivo, ruta) {
+  const archivoRef = ref(storage, ruta);
+  await uploadBytes(archivoRef, archivo);
+  return await getDownloadURL(archivoRef);
+}
 
-    cerrarSesionBtn.addEventListener("click", () => {
-      localStorage.removeItem("isLogged");               // ← cerramos sesión
-      window.location.href = "index.html";
-    });
-    agregarBtn.addEventListener("click", () => {
-      window.location.href = "formulario.html";
-    });
-
-    function mostrarHamburguesas() {
-      lista.innerHTML = "";
-      hamburguesas.forEach((ham, index) => {
-        let fbxEl = `<p><strong>Modelo 3D:</strong> ${ham.modelo_3d}</p>`;
-        if (fbxURLs[index] && fbxURLs[index].url) {
-          fbxEl = `
-            <a class="fbx-link"
-               href="${fbxURLs[index].url}"
-               download="${fbxURLs[index].nombre}">
-              Descargar 3D (.fbx)
-            </a>`;
-        }
-        lista.insertAdjacentHTML("beforeend", `
-          <div class="hamburguesa">
-            <div class="numero">${index+1}</div>
-            <div class="info">
-              <h3>${ham.nombre}</h3>
-              <p><strong>Descripción:</strong> ${ham.descripcion}</p>
-              <p><strong>Alto:</strong> ${ham.tamaño_alto} cm</p>
-              <p><strong>Ancho:</strong> ${ham.tamaño_ancho} cm</p>
-              <p><strong>Peso:</strong> ${ham.peso} g</p>
-              <p><strong>Precio:</strong> ${ham.precio} Bs</p>
-              ${fbxEl}
-            </div>
-            <div class="derecha">
-              <div class="botones">
-                <button onclick="startEdit(${index})">✏️ Editar</button>
-                <button onclick="eliminar(${index})">🗑️ Eliminar</button>
-              </div>
-              <div class="foto">
-                ${ ham.imagen
-                    ? `<img src="${ham.imagen}" alt="foto de ${ham.nombre}" />`
-                    : `<div class="no-foto">Sin foto</div>` }
-              </div>
-              <div class="texto-textura">
-                <p><strong>Textura:</strong> ${ham.textura}</p>
-              </div>
-            </div>
-          </div>
-        `);
-      });
+// Función para obtener el token CSRF
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
     }
+  }
+  return cookieValue;
+}
 
-    mostrarHamburguesas();
+// Evento de envío del formulario
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  // Validar formulario antes de continuar
+  if (!validarFormulario()) {
+    mostrarEstado('Por favor, corrige los errores en el formulario.', true, false);
     return;
   }
+  
+  // Mostrar estado de subida (sin auto-ocultar)
+  mostrarEstado('Subiendo archivos a Firebase...', false, false);
+  
+  // Obtener valores del formulario
+  const nombre = document.getElementById('nombre').value;
+  const descripcion = document.getElementById('descripcion').value;
+  const tamanio_alto = document.getElementById('tamanio_alto').value;
+  const tamanio_ancho = document.getElementById('tamanio_ancho').value;
+  const precio = document.getElementById('precio').value;
+  
+  // Obtener archivos
+  const modelo3d = document.getElementById('modelo3d').files[0];
+  const foto = document.getElementById('foto').files[0];
+  const textura = document.getElementById('textura').files[0];
 
-  // —————————————————————————————
-  // 3) FORMULARIO PAGE (formulario.html)
-  // —————————————————————————————
-  const form = document.getElementById("formHamburguesa");
-  if (form) {
-    // bloqueo de acceso directo
-    if (localStorage.getItem("isLogged") !== "true") {
-      window.location.href = "index.html";
-      return;
-    }
+  try {
+    // Subir archivos a Firebase
+    const [modeloUrl, fotoUrl, texturaUrl] = await Promise.all([
+      subirArchivo(modelo3d, `modelos/${Date.now()}_${modelo3d.name}`),
+      subirArchivo(foto, `imagenes/${Date.now()}_${foto.name}`),
+      subirArchivo(textura, `texturas/${Date.now()}_${textura.name}`)
+    ]);
 
-    const btnGuardar = document.getElementById("guardarBtn");
-    const cancelar   = document.getElementById("cancelarBtn");
-    const anuncio    = document.getElementById("anuncioCreacion");
-    const textoAn    = document.getElementById("textoAnuncio");
+    // Crear objeto con los datos según tu modelo
+    const hamburguesaData = {
+      nombre: nombre,
+      descripcion: descripcion,
+      modelo3d: modeloUrl,
+      imagen: fotoUrl,
+      textura_modelo: texturaUrl,
+      tamaño_alto: parseFloat(tamanio_alto),
+      tamaño_ancho: parseFloat(tamanio_ancho),
+      precio: parseFloat(precio.replace(",", "."))
+    };
 
-    // validadores
-    const campos = [
-      {
-        id: "nombre", isFile: false,
-        validator: v => /^[A-Za-zÁÉÍÓÚáéíóúÜüÑñ ]+$/.test(v),
-        msg: "El nombre solo admite letras y espacios."
+    // Mostrar estado de envío al servidor
+    mostrarEstado('Enviando datos al servidor...', false, false);
+    
+    // Enviar datos al servidor Django
+    const response = await fetch('http://localhost:8000/api/hamburguesas/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
       },
-      {
-        id: "descripcion", isFile: false,
-        validator: v => v.length >= 5,
-        msg: "Descripción mínima 5 caracteres."
-      },
-      {
-        id: "modelo3d", isFile: true,
-        validator: f => f && f.name.toLowerCase().endsWith(".fbx"),
-        msg: "Sube un .fbx válido."
-      },
-      {
-        id: "foto", isFile: true,
-        validator: f => f && ["image/png","image/jpeg","image/webp"].includes(f.type),
-        msg: "Imagen PNG/JPG/WEBP."
-      },
-      {
-        id: "textura", isFile: true,
-        validator: f => f && ["image/png","image/jpeg"].includes(f.type),
-        msg: "Textura PNG o JPG."
-      },
-      {
-        id: "tamanio_alto", isFile: false,
-        validator: v => { const n = +v; return n>=1&&n<=100; },
-        msg: "Alto 1–100 cm."
-      },
-      {
-        id: "tamanio_ancho", isFile: false,
-        validator: v => { const n = +v; return n>=1&&n<=100; },
-        msg: "Ancho 1–100 cm."
-      },
-      {
-        id: "peso", isFile: false,
-        validator: v => { const n = +v; return n>=1&&n<=500; },
-        msg: "Peso 1–500 g."
-      },
-      {
-        id: "precio", isFile: false,
-        validator: v => {
-          const num = parseFloat(v.replace(",", "."));
-          return /^\d+([.,]\d{1,2})?$/.test(v) && num>=0.01;
-        },
-        msg: "Precio ≥ 0.01 Bs."
+      body: JSON.stringify(hamburguesaData)
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      mostrarEstado('¡Hamburguesa creada con éxito!', false, true);
+      form.reset();
+      
+      // Redirigir después de 2 segundos
+// Redirigir después de 2 segundos
+    setTimeout(() => {
+      window.location.href = URL_PANEL;
+    }, 2000);
+
+    } else {
+      // Mostrar errores específicos del servidor
+      let errorMsg = 'Error en el servidor';
+      if (result.errors) {
+        errorMsg = Object.values(result.errors).join(', ');
+      } else if (result.error) {
+        errorMsg = result.error;
+      } else if (result.detail) {
+        errorMsg = result.detail;
       }
-    ];
-
-    const touched = {};
-
-    function validarTodo() {
-      let allOK = true;
-      campos.forEach(c => {
-        const fld     = document.getElementById(c.id);
-        const wrapper = fld.closest(".field");
-        const err     = document.getElementById(`error-${c.id}`);
-        const val     = c.isFile ? fld.files[0] : fld.value.trim();
-
-        if (touched[c.id] && !c.validator(val)) {
-          wrapper.classList.add("invalid");
-          err.textContent = c.msg;
-          allOK = false;
-        } else {
-          wrapper.classList.remove("invalid");
-          err.textContent = "";
-          if (touched[c.id] && c.validator(val)) delete touched[c.id];
-        }
-      });
-      btnGuardar.disabled = !allOK;
-      return allOK;
+      throw new Error(errorMsg);
     }
-
-    // marcar “touched” al interactuar
-    campos.forEach(c => {
-      const fld = document.getElementById(c.id);
-      const ev  = c.isFile ? "change" : "input";
-      fld.addEventListener(ev, () => {
-        touched[c.id] = true;
-        validarTodo();
-      });
-    });
-
-    // cancelar
-    cancelar.addEventListener("click", () => {
-      window.location.href = "panel.html";
-    });
-
-    // enviar
-    form.addEventListener("submit", e => {
-      e.preventDefault();
-      campos.forEach(c => touched[c.id] = true);
-      if (!validarTodo()) return;
-
-      // valores
-      const nombre   = form.nombre.value.trim();
-      const desc     = form.descripcion.value.trim();
-      const mdlFile  = document.getElementById("modelo3d").files[0];
-      const fotoFile = document.getElementById("foto").files[0];
-      const texFile  = document.getElementById("textura").files[0];
-      const alto     = +form.tamanio_alto.value;
-      const ancho    = +form.tamanio_ancho.value;
-      const peso     = +form.peso.value;
-      const precio   = parseFloat(form.precio.value.replace(",", ".")).toFixed(2);
-
-      // FBX blob
-      const blobUrl = URL.createObjectURL(mdlFile);
-      if (editandoId !== null) {
-        fbxURLs[editandoId] = { url: blobUrl, nombre: mdlFile.name };
-      } else {
-        fbxURLs.push({ url: blobUrl, nombre: mdlFile.name });
-      }
-
-      // leer imágenes
-      const reader1 = new FileReader();
-      reader1.onloadend = () => {
-        const fotoData = reader1.result;
-        const reader2 = new FileReader();
-        reader2.onloadend = () => {
-          const texData = reader2.result;
-
-          const nueva = {
-            nombre,
-            descripcion: desc,
-            modelo_3d: mdlFile.name,
-            tamaño_alto: alto,
-            tamaño_ancho: ancho,
-            peso,
-            precio,
-            imagen: fotoData,
-            texturaData: texData,
-            textura: texFile.name
-          };
-
-          if (editandoId !== null) {
-            hamburguesas[editandoId] = nueva;
-            editandoId = null;
-          } else {
-            hamburguesas.push(nueva);
-          }
-          localStorage.setItem("hamburguesas", JSON.stringify(hamburguesas));
-
-          textoAn.textContent = "🎉 ¡Hamburguesa guardada con éxito!";
-          anuncio.classList.remove("hidden");
-          setTimeout(() => {
-            window.location.href = "panel.html";
-          }, 1200);
-        };
-        reader2.readAsDataURL(texFile);
-      };
-      reader1.readAsDataURL(fotoFile);
-    });
-
-    return;
+    
+  } catch (error) {
+    console.error('Error:', error);
+    mostrarEstado(`Error: ${error.message}`, true, false);
   }
 });
 
-// —————————————————————————————
-// Funciones globales editar/eliminar
-// —————————————————————————————
-function startEdit(index) {
-  editandoId = index;
-  window.location.href = "formulario.html";
-}
+// Manejar el botón de cancelar
+document.getElementById('cancelarBtn').addEventListener('click', () => {
+  if (confirm('¿Seguro que deseas cancelar? Los datos no guardados se perderán.')) {
+    window.location.href = "{% url 'panel' %}";
+  }
+});
 
-function eliminar(index) {
-  if (!confirm("¿Eliminar esta hamburguesa?")) return;
-  hamburguesas.splice(index, 1);
-  if (fbxURLs[index]?.url) URL.revokeObjectURL(fbxURLs[index].url);
-  fbxURLs.splice(index, 1);
-  localStorage.setItem("hamburguesas", JSON.stringify(hamburguesas));
-  window.location.reload();
-}
+// Validación en tiempo real
+campos.forEach(campo => {
+  const elemento = document.getElementById(campo.id);
+  if (elemento) {
+    elemento.addEventListener('blur', () => validarCampo(campo));
+    if (campo.isFile) {
+      elemento.addEventListener('change', () => validarCampo(campo));
+    }
+  }
+});
